@@ -3,6 +3,11 @@
 который завершится через заданное количество миллисекунд со значением, переданным в аргумент.
  */
 export function mock(ms: number): Promise<number> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(ms);
+        }, ms);
+    });
 }
 
 /*
@@ -11,29 +16,35 @@ export function mock(ms: number): Promise<number> {
 export function getData(): Promise<number[]> {
     const result: number[] = [];
 
-    return mock(100)
-        .then((data1) => {
-            result.push(data1);
-            return mock(200);
-        })
-        .then((data2) => {
-            result.push(data2);
-            return mock(300);
-        })
-        .then((data3) => {
-            result.push(data3);
-            return result;
-        });
+    return Promise.all([mock(100), mock(200), mock(300)]).then((data) => {
+        result.push(...data);
+        return result;
+    });
 }
 
 /*
 Исправьте функцию catchException так, чтобы блок try/catch обрабатывал
 завершенный с ошибкой Promise и возвращал текст ошибки.
  */
+// export async function catchException(): Promise<string | undefined> {
+//     const myPromise = new Promise(function(resolve, reject){
+//         try{
+//             console.log("Выполнение асинхронной операции");
+//             getSomeWork();      // вызов не существующей функции
+//             resolve("Hello world!");
+//         }
+//         catch(err){
+//             reject(`Произошла ошибка: ${err.message}`);
+//         }
+//     });
+//     myPromise.catch( function(error){
+//         console.log(error);
+//     });
+// }
 export async function catchException(): Promise<string | undefined> {
     try {
-        Promise.reject(new Error('my error'));
+        await Promise.reject(new Error('my error'));
     } catch (err) {
-        return err.message;
+        if (err instanceof Error) return err.message;
     }
 }
